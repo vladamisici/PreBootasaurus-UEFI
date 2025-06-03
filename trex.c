@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* UEFI types - because microsoft */
 #define EFI_SUCCESS 0
 #define EFI_INVALID_PARAMETER 2
 #define EFI_NOT_READY 6
@@ -45,7 +44,6 @@ typedef int16_t INT16;
 typedef bool BOOLEAN;
 typedef UINTN EFI_TPL;
 
-/* holy shit that's a lot of structs */
 typedef struct {
     UINT64 Signature;
     UINT32 Revision;
@@ -69,7 +67,6 @@ typedef struct {
     UINT8 Pad2;
 } EFI_TIME;
 
-/* memory stuff nobody uses but we need anyway */
 typedef enum {
     EfiReservedMemoryType,
     EfiLoaderCode,
@@ -212,7 +209,7 @@ typedef struct {
     EFI_TABLE_HEADER Hdr;
 
     // Task Priority Services
-    void* RaiseTPL;  // never used lol
+    void* RaiseTPL;
     void* RestoreTPL;
 
     // Memory Services
@@ -234,7 +231,7 @@ typedef struct {
     );
 
     // Event & Timer Services
-    EFI_STATUS (EFIAPI *CreateEvent)(  // this one actually works sometimes
+    EFI_STATUS (EFIAPI *CreateEvent)(
         UINT32 Type,
         EFI_TPL NotifyTpl,
         void* NotifyFunction,
@@ -425,7 +422,6 @@ static const UINT8 cactusSprite[30][15] = {
     {0,0,0,0,0,1,1,1,0,0,0,0,0,0,0}
 };
 
-/* globals because fuck passing pointers everywhere */
 static EFI_SYSTEM_TABLE* gST;
 static EFI_BOOT_SERVICES* gBS;
 static EFI_GRAPHICS_OUTPUT_PROTOCOL* gGraphicsOutput;
@@ -435,7 +431,6 @@ static Dinosaur gDino;
 static Obstacle gObstacles[5];
 static GameState gGameState;
 
-/* memset/memcpy because uefi doesn't give us shit */
 static void* memset(void* dest, int val, UINTN count) {
     UINT8* d = dest;
     while (count--) {
@@ -469,7 +464,7 @@ static void IntToStr(UINT32 num, CHAR16* str) {
         num /= 10;
     }
 
-    // reverse the string cuz we built it backwards
+    // reverse the string
     int j = 0;
     while (i > 0) {
         str[j++] = temp[--i];
@@ -708,7 +703,6 @@ static void UpdateGame() {
 }
 
 static void DrawGame() {
-    // only redraw the play area - full screen clear is slow af
     UINT32 width = gGraphicsOutput->Mode->Info->HorizontalResolution;
     UINT32 pixelsPerScanLine = gGraphicsOutput->Mode->Info->PixelsPerScanLine;
 
@@ -788,7 +782,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     UINTN Index;
     EFI_INPUT_KEY Key;
 
-    (void)ImageHandle; // shut up compiler
+    (void)ImageHandle;
 
     // save ptrs
     gST = SystemTable;
@@ -825,7 +819,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     // Initialize game
     InitGame();
 
-    // timer setup (doesn't work half the time but whatever)
+
     // EVT_TIMER flag is required or it fails
     Status = gBS->CreateEvent(0x80000000, 0, NULL, NULL, &TimerEvent); // EVT_TIMER = 0x80000000
     if (Status != EFI_SUCCESS) {
@@ -845,7 +839,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     BOOLEAN useTimer = (Status == EFI_SUCCESS);
 
     ClearScreen(0x00000000);
-    gST->ConOut->EnableCursor(gST->ConOut, FALSE); // hide that annoying cursor
+    gST->ConOut->EnableCursor(gST->ConOut, FALSE);
 
     while (true) {
         // input handling
@@ -886,7 +880,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable
     if (useTimer) {
         gBS->CloseEvent(TimerEvent);
     }
-    gST->ConOut->EnableCursor(gST->ConOut, TRUE); // restore cursor
+    gST->ConOut->EnableCursor(gST->ConOut, TRUE);
     gST->ConOut->ClearScreen(gST->ConOut);
 
     return EFI_SUCCESS;
