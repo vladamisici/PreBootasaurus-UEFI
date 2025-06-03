@@ -2,8 +2,7 @@
 
 yeah so i ported the chrome dino game to UEFI because why not
 
-![screenshot](screenshot.png)
-*(screenshot coming soon™)*
+![gameplay](gif.gif)
 
 ## What is this?
 
